@@ -2,22 +2,27 @@ setwd(normalizePath(dirname(R.utils::commandArgs(asValues=TRUE)$"f")))
 source("../../scripts/h2o-r-test-setup.R")
 ################################################################################
 ##
-## Verify that we can specify data column type in R as well
+## This tests Orc multifile parser by comparing the summary of the original csv frame with the h2o parsed orc frame
 ##
 ################################################################################
 
 
 test.continuous.or.categorical <- function() {
 
-  airline_part0_csv <- h2o.importFile(locate("bigdata/laptop/parser/orc/airlines_import_type/000000_0.csv"))
-  airline_part0_orc <- h2o.importFile(locate("bigdata/laptop/parser/orc/airlines_import_type/000000_0.orc"),col.names = names(airline_part0_csv),col.types = c("Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum"))
 
-  h2o_and_h2o_equal(airline_part0_csv, airline_part0_orc)   # compare two frames and make sure they are equal
+	original = h2o.importFile(locate("bigdata/laptop/airlines_all.05p.csv"),destination_frame = "original",
+                     col.types=c("Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum"))
+	csv = h2o.importFile(locate("bigdata/laptop/parser/orc/pubdev_3200/air05_csv"),destination_frame = "csv",col.names = names(original),
+                     col.types=c("Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum"))
+	orc = h2o.importFile(locate("bigdata/laptop/parser/orc/pubdev_3200/air05_orc"),destination_frame = "orc",col.names = names(original),
+                     col.types=c("Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum"))
 
-  # Nidhi:  Please add frame summary comparison.  In particular, we would like to compare the sizes of the
-  # two frames.  They should be close within some tolerance.  In flow, they are both about 4MB.
-
+  	expect_equal(summary(csv),summary(original))
+  	
+  	for(i in 1:ncol(csv)){
+       print(i)
+       expect_equal(summary(csv[,i]),summary(orc[,i]))
+    }
 }
 
-doTest("Veryfying R Orc Parser Can Declare Types on Import", test.continuous.or.categorical)
-
+doTest("Test orc multifile parser", test.continuous.or.categorical)
