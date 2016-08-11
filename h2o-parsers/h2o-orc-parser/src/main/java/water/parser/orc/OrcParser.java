@@ -458,6 +458,10 @@ public class OrcParser extends Parser {
       this.allColumnNames = allColNames;
     }
 
+    @Override
+    protected boolean isCompatible(ParseSetup setupB) {
+      return super.isCompatible(setupB) && Arrays.equals(getColumnTypes(),setupB.getColumnTypes());
+    }
 
     @Override
     protected Parser parser(Key jobKey) {

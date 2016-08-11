@@ -5,6 +5,7 @@ import water.api.schemas3.ParseSetupV3;
 import water.exceptions.H2OIllegalArgumentException;
 import water.fvec.*;
 import water.util.ArrayUtils;
+import water.util.FileUtils;
 import water.util.Log;
 
 import java.io.BufferedReader;
@@ -40,6 +41,10 @@ public class ParseSetup extends Iced {
   String[][] _na_strings;       // Strings for NA in a given column
   String[][] _data;           // First few rows of parsed/tokenized data
 
+  String [] _fileNames = new String[]{"unknown"};
+
+  public void setFileName(String name) {_fileNames[0] = name;}
+
   public ParseWriter.ParseErr[] _errs;
   public int _chunk_size = FileVec.DFLT_CHUNK_SIZE;  // Optimal chunk size to be used store values
   PreviewParseWriter _column_previews = null;
@@ -50,6 +55,7 @@ public class ParseSetup extends Iced {
          ps._column_names, ps._column_types, ps._domains, ps._na_strings, ps._data,
          new ParseWriter.ParseErr[0], ps._chunk_size);
   }
+
 
   public static ParseSetup makeSVMLightSetup(){
     return new ParseSetup(SVMLight_INFO, ParseSetup.GUESS_SEP,
@@ -391,6 +397,7 @@ public class ParseSetup extends Iced {
                   "Remaining files have been ignored.";
         }*/
       }
+      _gblSetup.setFileName(FileUtils.keyToFileName(key));
     }
 
     /**
@@ -432,17 +439,17 @@ public class ParseSetup extends Iced {
       mergedSetup._check_header = unifyCheckHeader(setupA._check_header, setupB._check_header);
 
       mergedSetup._separator = unifyColumnSeparators(setupA._separator, setupB._separator);
-      mergedSetup._column_names = unifyColumnNames(setupA._column_names, setupB._column_names);
       if (setupA._parse_type.equals(ARFF_INFO) && setupB._parse_type.equals(CSV_INFO))
         ;// do nothing parse_type and col_types are already set correctly
       else if (setupA._parse_type.equals(CSV_INFO) && setupB._parse_type.equals(ARFF_INFO)) {
         mergedSetup._parse_type = ARFF_INFO;
         mergedSetup._column_types = setupB._column_types;
-      } else if (setupA._parse_type.equals(setupB._parse_type)) {
+      } else if (setupA.isCompatible(setupB)) {
         mergedSetup._column_previews = PreviewParseWriter.unifyColumnPreviews(setupA._column_previews, setupB._column_previews);
       } else
-        throw new ParseDataset.H2OParseException("File type mismatch. Cannot parse files of type "
-                + setupA._parse_type + " and " + setupB._parse_type + " as one dataset.");
+        throw new ParseDataset.H2OParseException("File type mismatch. Cannot parse files " + setupA.file() + " and " + setupB.file() + " of type "
+                + setupA._parse_type.name() + " and " + setupB._parse_type.name() + " as one dataset.");
+      mergedSetup._column_names = unifyColumnNames(setupA._column_names, setupB._column_names);
       mergedSetup._number_columns = mergedSetup._parse_type.equals(CSV_INFO) ? Math.max(setupA._number_columns,setupB._number_columns):unifyColumnCount(setupA._number_columns, setupB._number_columns,mergedSetup, fileA, fileB);
       if (mergedSetup._data.length < PreviewParseWriter.MAX_PREVIEW_LINES) {
         int n = mergedSetup._data.length;
@@ -451,6 +458,7 @@ public class ParseSetup extends Iced {
         System.arraycopy(setupB._data, 1, mergedSetup._data, n, m - n);
       }
       mergedSetup._errs = ArrayUtils.append(setupA._errs,setupB._errs);
+      mergedSetup._fileNames = ArrayUtils.append(setupA._fileNames,setupB._fileNames);
       if(mergedSetup._errs.length > 20)
         mergedSetup._errs = Arrays.copyOf(mergedSetup._errs,20);
       return mergedSetup;
@@ -499,6 +507,18 @@ public class ParseSetup extends Iced {
         return namesA;
       }
     }
+  }
+
+
+  private String file() {
+    String [] names = _fileNames;
+    if(names.length > 5)
+      names = Arrays.copyOf(names,5);
+    return Arrays.toString(names);
+  }
+
+  protected boolean isCompatible(ParseSetup setupB) {
+    return _parse_type.equals(setupB._parse_type) && _number_columns == setupB._number_columns;
   }
 
   /**
