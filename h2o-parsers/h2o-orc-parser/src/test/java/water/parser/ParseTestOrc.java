@@ -86,7 +86,7 @@ public class ParseTestOrc extends TestUtil {
     };
 
     @BeforeClass
-    static public void setup() { TestUtil.stall_till_cloudsize(5); }
+    static public void setup() { TestUtil.stall_till_cloudsize(1); }
 
     @Test
     public void testParseAllOrcs() {
@@ -149,13 +149,17 @@ public class ParseTestOrc extends TestUtil {
 
             } else {
                 Log.warn("The following file was not found: " + fileName);
+                failedFiles.add(fileName);
                 numberWrong++;
             }
         }
 
         if (numberWrong > 0) {
             Log.warn("There are errors in your test.");
-            assertEquals("Number of orc files failed to parse is: "  + ", failed files = " + failedFiles.toString(), 0, numberWrong);
+            assertEquals("Number of orc files failed to parse is: " + numberWrong + ", failed files = " +
+                    failedFiles.toString(), 0, numberWrong);
+        } else {
+            Log.info("Parser test passed!  Number of files parsed is " + totalFilesTested);
         }
     }
 
