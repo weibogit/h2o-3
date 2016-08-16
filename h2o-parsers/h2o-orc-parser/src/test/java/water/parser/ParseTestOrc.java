@@ -149,6 +149,7 @@ public class ParseTestOrc extends TestUtil {
 
             } else {
                 Log.warn("The following file was not found: " + fileName);
+                numberWrong++;
             }
         }
 
