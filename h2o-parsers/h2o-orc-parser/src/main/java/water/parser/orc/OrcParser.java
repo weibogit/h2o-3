@@ -5,7 +5,6 @@ import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
-import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.*;
 import org.joda.time.DateTime;
@@ -145,11 +144,11 @@ public class OrcParser extends Parser {
         writeLongcolumn((LongColumnVector)oneColumn, cIdx, rowNumber, dout);
         break;
       case "float":
-      case "real":    // type used by h2o
       case "double":
         writeDoublecolumn((DoubleColumnVector)oneColumn, cIdx, rowNumber, dout);
         break;
       case "numeric":
+      case "real":
         if (oneColumn instanceof LongColumnVector)
           writeLongcolumn((LongColumnVector)oneColumn, cIdx, rowNumber, dout);
         else

@@ -2698,3 +2698,53 @@ def expect_warnings(filewithpath, warn_phrase="warn", warn_string_of_interest="w
         return True
     else:
         return False
+
+
+def compare_frame_summary(frame1_summary, frame2_summary, compareNames=False, compareTypes=False):
+    """
+        This method is written to compare the frame summary between two frames.
+
+    :param frame1_summary:
+    :param frame2_summary:
+    :param compareNames:
+    :param compareTypes:
+    :return:
+    """
+
+    frame1_column_number = len(frame1_summary)
+    frame2_column_number = len(frame2_summary)
+
+    assert frame1_column_number == frame2_column_number, "failed column number check!  Frame 1 column number: {0}," \
+                                                         "frame 2 column number: {1}".format(frame1_column_number,
+                                                                                             frame2_column_number)
+
+    for col_index in range(frame1_column_number):   # check summary for each column
+        print("wow")
+        for key_val in list(frame1_summary[col_index]):
+
+            if not(compareNames) and (str(key_val) == 'label'):
+                continue
+
+            if not(compareTypes) and (str(key_val) == 'type'):
+                continue
+
+            val1 = frame1_summary[col_index][key_val]
+            val2 = frame2_summary[col_index][key_val]
+
+            # skip the column name comparison
+
+            # skip the column type comparison
+
+            if isinstance(val1, list):
+                assert cmp(val1, val2) == 0, "failed column summary comparison for column {0} and summary type " \
+                                             "{1}, frame 1 value is {2}, frame 2 value is " \
+                                             "{3}".format(col_index, str(key_val), val1, val2)
+            else:
+                if isinstance(val1, float):
+                    assert abs(val1-val2) < 1e-5, "failed column summary comparison for column {0} and summary type " \
+                                                  "{1}, frame 1 value is {2}, frame 2 value is " \
+                                                  "{3}".format(col_index, str(key_val), val1, val2)
+                else:
+                    assert val1 == val2, "failed column summary comparison for column {0} and summary type " \
+                                         "{1}, frame 1 value is {2}, frame 2 value is " \
+                                         "{3}".format(col_index, str(key_val), val1, val2)
