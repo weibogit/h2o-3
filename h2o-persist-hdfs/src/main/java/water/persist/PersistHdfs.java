@@ -41,8 +41,6 @@ public final class PersistHdfs extends Persist {
   /** Root path of HDFS */
   private final Path _iceRoot;
 
-
-
   // Global HDFS initialization
   // FIXME: do not share it via classes, but initialize it by object
   static {
