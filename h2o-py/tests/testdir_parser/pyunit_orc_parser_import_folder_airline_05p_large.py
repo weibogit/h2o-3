@@ -18,8 +18,8 @@ def import_folder():
     tol_numeric = 1e-5          # tolerance for comparing other numeric fields
     numElements2Compare = 10   # choose number of elements per column to compare.  Save test time.
 
-    multi_file_csv = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/airlines_05p_orc_csv"))
-    multi_file_orc = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/airlines_05p_orc"))
+    multi_file_csv = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_csv"))
+    multi_file_orc = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_orc"))
 
 
     # Nidhi:  Can you please change the frame comparison to column statistics instead of actual values?  The
