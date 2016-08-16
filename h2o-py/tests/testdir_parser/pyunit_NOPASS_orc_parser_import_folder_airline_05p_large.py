@@ -14,21 +14,40 @@ def import_folder():
     :return: None if passed.  Otherwise, an exception will be thrown.
     """
 
-    data_types = ['real','real','real','real','real','real','real','real','enum','real','enum','real','real','enum',
-                  'real','real','enum','enum','real','enum','enum','real','enum','real','enum','enum','enum','enum',
-                  'enum','enum','enum']
+    multi_file_csv = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_csv"))
+    csv_type_dict = multi_file_csv.types
 
-    multi_file_csv = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_csv"),
-                                     col_types=data_types)
     multi_file_csv.summary()
     csv_summary = h2o.frame(multi_file_csv.frame_id)["frames"][0]["columns"]
 
+    multi_file_orc_original = h2o.import_file(path=
+                                              pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_orc"))
+
+    col_ind_name = dict()
+    # change column types from real to enum according to multi_file_csv column types
+    for key_name in list(csv_type_dict):
+        col_ind = key_name.split('C')
+        new_ind = int(str(col_ind[1]))-1
+        col_ind_name[new_ind] = key_name
+        if str(csv_type_dict[key_name]) == 'enum':
+            new_key = '_col'+str(new_ind)
+            multi_file_orc_original[new_key] = multi_file_orc_original[new_key].asfactor()
+#    multi_file_orc_original.summary()
+    multi_file_orc_original_summary = h2o.frame(multi_file_orc_original.frame_id)["frames"][0]["columns"]
+
+    col_types = []
+    for ind in range(len(col_ind_name)):
+        col_types.append(csv_type_dict[col_ind_name[ind]])
+
     multi_file_orc = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_orc"),
-                                     col_types=data_types)
+                                     col_types=col_types)
     multi_file_orc.summary()
     orc_summary = h2o.frame(multi_file_orc.frame_id)["frames"][0]["columns"]
 
+    # compare frame read by orc by forcing column type
     pyunit_utils.compare_frame_summary(csv_summary, orc_summary)
+    # compare frame read by orc without column type forcing by change it later
+    pyunit_utils.compare_frame_summary(csv_summary, multi_file_orc_original_summary)
 
 
 if __name__ == "__main__":
