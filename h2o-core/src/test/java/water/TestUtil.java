@@ -9,6 +9,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import water.fvec.*;
 import water.parser.BufferedString;
+import water.parser.DefaultParserProviders;
 import water.parser.ParseDataset;
 import water.parser.ParseSetup;
 import water.util.Log;
@@ -238,6 +239,53 @@ public class TestUtil extends Iced {
     keys.toArray(res);
     return ParseDataset.parse(Key.make(), res);
   }
+
+
+  /**
+   * Parse a folder with csv files when a single na_string is specified.
+   *
+   * @param fname
+   * @param na_string
+   * @return
+   */
+  protected Frame parse_test_folder( String fname, String na_string, int check_header, byte[] column_types ) {
+    File folder = find_test_file(fname);
+    assert folder.isDirectory();
+    File[] files = folder.listFiles();
+    Arrays.sort(files);
+    ArrayList<Key> keys = new ArrayList<>();
+    for( File f : files )
+      if( f.isFile() )
+        keys.add(NFSFileVec.make(f)._key);
+
+    Key[] res = new Key[keys.size()];
+    keys.toArray(res);  // generated the necessary key here
+
+    // create new parseSetup in order to store our na_string
+    ParseSetup p = ParseSetup.guessSetup(res, new ParseSetup(DefaultParserProviders.GUESS_INFO,(byte) ',',true,
+            check_header,0,null,null,null,null,null));
+
+    // add the na_strings into p.
+    if (na_string != null) {
+      int column_number = p.getColumnTypes().length;
+      int na_length = na_string.length() - 1;
+
+      String[][] na_strings = new String[column_number][na_length + 1];
+
+      for (int index = 0; index < column_number; index++) {
+        na_strings[index][na_length] = na_string;
+      }
+
+      p.setNAStrings(na_strings);
+    }
+
+    if (column_types != null)
+      p.setColumnTypes(column_types);
+
+    return ParseDataset.parse(Key.make(), res, true, p);
+
+  }
+
 
   /** A Numeric Vec from an array of ints
    *  @param rows Data
