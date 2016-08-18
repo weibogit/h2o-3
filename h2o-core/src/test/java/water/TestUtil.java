@@ -216,11 +216,44 @@ public class TestUtil extends Iced {
     NFSFileVec nfs = NFSFileVec.make(f);
     return ParseDataset.parse(outputKey, nfs._key);
   }
+
   protected Frame parse_test_file( Key outputKey, String fname , boolean guessSetup) {
     File f = find_test_file(fname);
     assert f != null && f.exists():" file not found: " + fname;
     NFSFileVec nfs = NFSFileVec.make(f);
     return ParseDataset.parse(outputKey, new Key[]{nfs._key}, true, ParseSetup.guessSetup(new Key[]{nfs._key},false,1));
+  }
+
+  protected Frame parse_test_file( String fname, String na_string, int check_header, byte[] column_types ) {
+    File f = find_test_file_static(fname);
+    assert f != null && f.exists():" file not found: " + fname;
+    NFSFileVec nfs = NFSFileVec.make(f);
+
+    Key[] res = {nfs._key};
+
+    // create new parseSetup in order to store our na_string
+    ParseSetup p = ParseSetup.guessSetup(res, new ParseSetup(DefaultParserProviders.GUESS_INFO,(byte) ',',true,
+            check_header,0,null,null,null,null,null));
+
+    // add the na_strings into p.
+    if (na_string != null) {
+      int column_number = p.getColumnTypes().length;
+      int na_length = na_string.length() - 1;
+
+      String[][] na_strings = new String[column_number][na_length + 1];
+
+      for (int index = 0; index < column_number; index++) {
+        na_strings[index][na_length] = na_string;
+      }
+
+      p.setNAStrings(na_strings);
+    }
+
+    if (column_types != null)
+      p.setColumnTypes(column_types);
+
+    return ParseDataset.parse(Key.make(), res, true, p);
+
   }
 
   /** Find & parse a folder of CSV files.  NPE if file not found.
