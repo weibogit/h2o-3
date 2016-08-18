@@ -37,7 +37,7 @@ public class ParseTestORCCSV extends TestUtil {
     private Boolean[] forceColumnTypes = {false, false, false, true, true, true};
 
     @BeforeClass
-    static public void setup() { TestUtil.stall_till_cloudsize(1); }
+    static public void setup() { TestUtil.stall_till_cloudsize(5); }
 
     @Test
     public void testParseOrcCsvFiles() {

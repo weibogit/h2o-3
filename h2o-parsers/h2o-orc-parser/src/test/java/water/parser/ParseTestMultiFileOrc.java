@@ -30,7 +30,7 @@ public class ParseTestMultiFileOrc extends TestUtil {
             "bigdata/laptop/parser/orc/milsongs_orc", "smalldata/parser/orc/synthetic_perfect_separation"};
 
     @BeforeClass
-    static public void setup() { TestUtil.stall_till_cloudsize(1); }
+    static public void setup() { TestUtil.stall_till_cloudsize(5); }
 
     @Test
     public void testParseMultiFileOrcs() {
