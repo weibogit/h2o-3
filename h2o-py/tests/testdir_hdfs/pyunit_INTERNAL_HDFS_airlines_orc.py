@@ -25,7 +25,7 @@ def hdfs_orc_parser():
 
         hdfs_name_node = pyunit_utils.hadoop_namenode()
         hdfs_orc_file = "/datasets/airlines_all_orc_parts"
-        hdfs_csv_file = "/datasets/airlines/airlines_all.csv"
+        hdfs_csv_file = "/datasets/air_csv_part"
 
         col_types = ['real', 'real', 'real', 'real', 'real', 'real', 'real', 'real', 'enum', 'real', 'enum', 'real',
                      'real', 'enum', 'real', 'real', 'enum', 'enum', 'real', 'enum', 'enum', 'real', 'real', 'real',
@@ -36,7 +36,7 @@ def hdfs_orc_parser():
         url_csv = "hdfs://{0}{1}".format(hdfs_name_node, hdfs_csv_file)
 
         startcsv = time.time()
-        multi_file_csv = h2o.import_file(url_csv, col_types=col_types)
+        multi_file_csv = h2o.import_file(url_csv, na_strings=['\\N'], col_types=col_types)
         endcsv = time.time()
 
         startcsv1 = time.time()

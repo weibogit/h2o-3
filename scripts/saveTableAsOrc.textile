@@ -40,7 +40,8 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ‘,’
 location ‘/apps/hive/warehouse/data/airlines_all_05p’;
 load data inpath ‘hdfs://mr-0xd6.0xdata.loc:8020/user/amy/airlines_all.05p.csv’ into table airlines_all_05p;
-create table orc_airlines_all_05p(
+
+create table csv_airlines_all(
 Year INT,
 Month INT,
 DayofMonth INT,
@@ -51,7 +52,7 @@ ArrTime INT,
 CRSArrTime INT,
 UniqueCarrier STRING,
 FlightNum INT,
-TailNum INT,
+TailNum STRING,
 ActualElapsedTime INT,
 CRSElapsedTime INT,
 AirTime INT,
