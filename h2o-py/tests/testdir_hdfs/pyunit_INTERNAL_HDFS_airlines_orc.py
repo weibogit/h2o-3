@@ -27,13 +27,22 @@ def hdfs_orc_parser():
         hdfs_orc_file = "/datasets/airlines_all_orc_parts"
         hdfs_csv_file = "/datasets/airlines/airlines_all.csv"
 
+        col_types = ['real', 'real', 'real', 'real', 'real', 'real', 'real', 'real', 'enum', 'real', 'enum', 'real',
+                     'real', 'enum', 'real', 'real', 'enum', 'enum', 'real', 'enum', 'enum', 'real', 'real', 'real',
+                     'enum', 'enum', 'enum', 'enum', 'enum', 'enum', 'enum']
+
         # import CSV file
         print("Import airlines 116M dataset in original csv format from HDFS")
         url_csv = "hdfs://{0}{1}".format(hdfs_name_node, hdfs_csv_file)
 
         startcsv = time.time()
-        multi_file_csv = h2o.import_file(url_csv)
+        multi_file_csv = h2o.import_file(url_csv, col_types=col_types)
         endcsv = time.time()
+
+        startcsv1 = time.time()
+        multi_file_csv1 = h2o.import_file(url_csv)
+        endcsv1 = time.time()
+        h2o.remove(multi_file_csv1)
 
         multi_file_csv.summary()
         csv_summary = h2o.frame(multi_file_csv.frame_id)["frames"][0]["columns"]
@@ -47,10 +56,6 @@ def hdfs_orc_parser():
         endorc1 = time.time()
         h2o.remove(multi_file_orc1)
 
-        col_types = ['int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'enum', 'int', 'enum', 'int', 'int',
-                     'enum', 'int', 'int', 'enum', 'enum', 'int', 'enum', 'enum', 'int', 'int', 'int', 'enum', 'enum',
-                     'enum', 'enum', 'enum', 'enum', 'enum']
-
         startorc = time.time()
         multi_file_orc = h2o.import_file(url_orc, col_types=col_types)
         endorc = time.time()
@@ -58,7 +63,8 @@ def hdfs_orc_parser():
         multi_file_orc.summary()
         orc_summary = h2o.frame(multi_file_orc.frame_id)["frames"][0]["columns"]
 
-        print("************** CSV parse time is {0}".format(endcsv-startcsv))
+        print("************** CSV (without column type forcing) parse time is {0}".format(endcsv1-startcsv1))
+        print("************** CSV (with column type forcing) parse time is {0}".format(endcsv-startcsv))
         print("************** ORC (without column type forcing) parse time is {0}".format(endorc1-startorc1))
         print("************** ORC (with column type forcing) parse time is {0}".format(endorc-startorc))
 
