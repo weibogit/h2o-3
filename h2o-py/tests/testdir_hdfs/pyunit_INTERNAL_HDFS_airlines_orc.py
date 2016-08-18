@@ -35,23 +35,8 @@ def hdfs_orc_parser():
         multi_file_csv = h2o.import_file(url_csv)
         endcsv = time.time()
 
-
-
-        csv_type_dict = multi_file_csv.types
-
         multi_file_csv.summary()
         csv_summary = h2o.frame(multi_file_csv.frame_id)["frames"][0]["columns"]
-
-        col_ind_name = dict()
-        # change column types from real to enum according to multi_file_csv column types
-        for key_name in list(csv_type_dict):
-            col_ind = key_name.split('C')
-            new_ind = int(str(col_ind[1]))-1
-            col_ind_name[new_ind] = key_name
-
-        col_types = []
-        for ind in range(len(col_ind_name)):
-            col_types.append(csv_type_dict[col_ind_name[ind]])
 
         # import ORC file with same column types as CSV file
         print("Import airlines 116M dataset in ORC format from HDFS")
@@ -61,6 +46,10 @@ def hdfs_orc_parser():
         multi_file_orc1 = h2o.import_file(url_orc)
         endorc1 = time.time()
         h2o.remove(multi_file_orc1)
+
+        col_types = ['int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'enum', 'int', 'enum', 'int', 'int',
+                     'enum', 'int', 'int', 'enum', 'enum', 'int', 'enum', 'enum', 'int', 'int', 'int', 'enum', 'enum',
+                     'enum', 'enum', 'enum', 'enum', 'enum']
 
         startorc = time.time()
         multi_file_orc = h2o.import_file(url_orc, col_types=col_types)
