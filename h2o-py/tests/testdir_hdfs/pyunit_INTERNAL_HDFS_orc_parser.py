@@ -23,11 +23,11 @@ def hdfs_orc_parser():
         hdfs_orc_file = "/datasets/orc_parser/prostate_NA.orc"
         hdfs_csv_file = "/datasets/orc_parser/prostate_NA.csv"
 
-        print("Importing prostate_NB.orc from HDFS")
+        print("Importing prostate_NA.orc from HDFS")
         url_orc = "hdfs://{0}{1}".format(hdfs_name_node, hdfs_orc_file)
         orc_h2o = h2o.import_file(url_orc)
 
-        print("Importing prostate_NB.csv from HDFS")
+        print("Importing prostate_NA.csv from HDFS")
         url_csv = "hdfs://{0}{1}".format(hdfs_name_node, hdfs_csv_file)
         csv_h2o = h2o.import_file(url_csv)
 
