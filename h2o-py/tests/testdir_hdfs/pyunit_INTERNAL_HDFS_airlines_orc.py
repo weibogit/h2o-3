@@ -25,7 +25,7 @@ def hdfs_orc_parser():
 
         hdfs_name_node = pyunit_utils.hadoop_namenode()
         hdfs_orc_file = "/datasets/airlines_all_orc_parts"
-        hdfs_csv_file = "/datasets/airlines_all.csv"
+        hdfs_csv_file = "/datasets/airlines/airlines_all.csv"
 
         # import CSV file
         print("Import airlines 116M dataset in original csv format from HDFS")

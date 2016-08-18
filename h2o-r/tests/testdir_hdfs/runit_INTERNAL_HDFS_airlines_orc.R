@@ -11,7 +11,7 @@ hadoop_namenode_is_accessible = hadoop.namenode.is.accessible()
 if (hadoop_namenode_is_accessible) {
   hdfs_name_node = HADOOP.NAMENODE
   hdfs_air_orc = "/datasets/airlines_all_orc_parts"
-  hdfs_air_original = "/datasets/airlines_all.csv"
+  hdfs_air_original = "/datasets/airlines/airlines_all.csv"
 } else {
   stop("Not running on H2O internal network. No access to HDFS.")
 }
