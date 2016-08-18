@@ -2,6 +2,7 @@ from __future__ import print_function
 import sys
 sys.path.insert(1,"../../")
 import h2o
+import time
 from tests import pyunit_utils
 
 
@@ -13,9 +14,11 @@ def import_folder():
     to make sure they are equal.
     :return: None if passed.  Otherwise, an exception will be thrown.
     """
-
+    startcsv = time.time()
     multi_file_csv = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_csv"),
                                      na_strings=['\\N'])
+    endcsv = time.time()
+
     csv_type_dict = multi_file_csv.types
 
     multi_file_csv.summary()
@@ -32,11 +35,22 @@ def import_folder():
     for ind in range(len(col_ind_name)):
         col_types.append(csv_type_dict[col_ind_name[ind]])
 
+    startorc1 = time.time()
+    multi_file_orc1 = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_orc"))
+    endorc1 = time.time()
+    h2o.remove(multi_file_orc1)
+
+    startorc = time.time()
     multi_file_orc = h2o.import_file(path=pyunit_utils.locate("bigdata/laptop/parser/orc/pubdev_3200/air05_orc"),
                                      col_types=col_types)
+    endorc = time.time()
+
     multi_file_orc.summary()
     orc_summary = h2o.frame(multi_file_orc.frame_id)["frames"][0]["columns"]
 
+    print("************** CSV parse time is {0}".format(endcsv-startcsv))
+    print("************** ORC (without column type forcing) parse time is {0}".format(endorc1-startorc1))
+    print("************** ORC (with column type forcing) parse time is {0}".format(endorc-startorc))
     # compare frame read by orc by forcing column type,
     pyunit_utils.compare_frame_summary(csv_summary, orc_summary)
 

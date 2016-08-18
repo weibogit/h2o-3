@@ -1,14 +1,7 @@
 setwd(normalizePath(dirname(R.utils::commandArgs(asValues=TRUE)$"f")))
 source("../../scripts/h2o-r-test-setup.R")
 #----------------------------------------------------------------------
-# Purpose:  This tests GLRM on a large dataset.
-#----------------------------------------------------------------------
-
-
-
-
-#----------------------------------------------------------------------
-# Parameters for the test.
+# Purpose:  This tests orc parser on multi-file parsing in HDFS.
 #----------------------------------------------------------------------
 
 # Check if we are running inside the H2O network by seeing if we can touch
@@ -28,20 +21,37 @@ if (hadoop_namenode_is_accessible) {
 heading("BEGIN TEST")
 check.hdfs_airorc <- function() {
 
-  
-  
   heading("Import airlines 116M dataset in original csv format ")
   url <- sprintf("hdfs://%s%s", hdfs_name_node, hdfs_air_original)
-  system.time(csv.hex <- h2o.importFile(url))
+  
+  print("************** csv parsing time: ")
+  ptm <- proc.time()
+  csv.hex <- h2o.importFile(url)
+  timepassed = proc.time() - ptm
+  print(timepassed)
+  
   n <- nrow(csv.hex)
   print(paste("Imported n =", n, "rows from csv"))
   
   heading("Import airlines 116M dataset in ORC format ")
+  
+  print("************** orc parsing time without forcing column types: ")
+  ptm <- proc.time()
+  orc2.hex <- h2o.importFolder(url,destination_frame = "dd2")
+  timepassed = proc.time() - ptm
+  print(timepassed)
+  h2o.rm(orc2.hex)
+  
   url <- sprintf("hdfs://%s%s", hdfs_name_node, hdfs_air_orc)
-  system.time(orc.hex <- h2o.importFolder(url,destination_frame = "dd",col.names = names(csv.hex),
+  print("************** orc parsing time: ")
+  ptm <- proc.time()
+  orc.hex <- h2o.importFolder(url,destination_frame = "dd",col.names = names(csv.hex),
                       col.types = c("Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Numeric",
                       "Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum","Numeric","Numeric","Numeric","Numeric"
-                      ,"Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum")))
+                      ,"Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Enum","Enum"))
+  timepassed = proc.time() - ptm
+  print(timepassed)
+  
   n <- nrow(orc.hex)
   print(paste("Imported n =", n, "rows from orc"))
 
@@ -50,9 +60,6 @@ check.hdfs_airorc <- function() {
   expect_equal(summary(orc.hex),summary(csv.hex))
   
   h2o.rm(orc.hex)   # remove file
-
-
-  
 }
 
 doTest("ORC multifile parse test", check.hdfs_airorc)
