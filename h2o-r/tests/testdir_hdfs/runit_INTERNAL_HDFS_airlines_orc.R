@@ -14,7 +14,7 @@ print(hdfs_name_node)
 #myPort <- ipPort[[2]]
 
 hdfs_air_orc = "/datasets/airlines_all_orc_parts"
-hdfs_air_original = "/datasets/air_csv_part"
+hdfs_air_original = "/datasets/airlines/airlines_all.csv"
 
 #h2o.init(ip=myIP, port=myPort, startH2O = FALSE)
 
