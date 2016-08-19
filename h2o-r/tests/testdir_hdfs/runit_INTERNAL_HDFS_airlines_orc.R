@@ -6,15 +6,11 @@ source("../../scripts/h2o-r-test-setup.R")
 
 # Check if we are running inside the H2O network by seeing if we can touch
 # the namenode.
-hadoop_namenode_is_accessible = hadoop.namenode.is.accessible()
+hdfs_name_node <- Sys.getenv(c("NAME_NODE")) 
+print(hdfs_name_node)
 
-if (hadoop_namenode_is_accessible) {
-  hdfs_name_node = HADOOP.NAMENODE
-  hdfs_air_orc = "/datasets/airlines_all_orc_parts"
-  hdfs_air_original = "/datasets/airlines/airlines_all.csv"
-} else {
-  stop("Not running on H2O internal network. No access to HDFS.")
-}
+hdfs_air_orc = "/datasets/airlines_all_orc_parts"
+hdfs_air_original = "/datasets/airlines/airlines_all.csv"
 
 #----------------------------------------------------------------------
 
