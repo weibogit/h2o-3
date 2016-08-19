@@ -2634,11 +2634,12 @@ def compareOneNumericColumn(frame1, frame2, col_ind, rows, tolerance, numElement
     :return: None.  Will throw exceptions if comparison failed.
     """
 
-    row_indices = list(range(rows))
+    row_indices = []
     if numElements > 0:
-        random.shuffle(row_indices)
+        row_indices = random.sample(xrange(rows),numElements)
     else:
-        numElements = rows
+        numElements = rows  # Compare all elements
+        list(range(rows))
 
     for ele_ind in range(numElements):
         row_ind = row_indices[ele_ind]
