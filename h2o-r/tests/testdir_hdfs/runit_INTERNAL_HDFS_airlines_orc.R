@@ -9,8 +9,14 @@ source("../../scripts/h2o-r-test-setup.R")
 hdfs_name_node <- Sys.getenv(c("NAME_NODE")) 
 print(hdfs_name_node)
 
+#ipPort <- get_args(commandArgs(trailingOnly = TRUE))
+#myIP   <- ipPort[[1]]
+#myPort <- ipPort[[2]]
+
 hdfs_air_orc = "/datasets/airlines_all_orc_parts"
 hdfs_air_original = "/datasets/air_csv_part"
+
+#h2o.init(ip=myIP, port=myPort, startH2O = FALSE)
 
 #----------------------------------------------------------------------
 
