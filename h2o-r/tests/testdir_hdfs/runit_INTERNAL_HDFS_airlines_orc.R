@@ -10,7 +10,7 @@ hdfs_name_node <- Sys.getenv(c("NAME_NODE"))
 print(hdfs_name_node)
 
 hdfs_air_orc = "/datasets/airlines_all_orc_parts"
-hdfs_air_original = "/datasets/airlines/airlines_all.csv"
+hdfs_air_original = "/datasets/air_csv_part"
 
 #----------------------------------------------------------------------
 
