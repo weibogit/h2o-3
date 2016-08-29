@@ -445,7 +445,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     public boolean isSupervised() { return _isSupervised; }
     /** The name of the response column (which is always the last column). */
     protected final boolean _hasOffset; // weights and offset are kept at designated position in the names array
-    protected final boolean _hasWeights;// only need to know if we have them
+    public final boolean _hasWeights;// only need to know if we have them
     protected final boolean _hasFold;// only need to know if we have them
     public boolean hasOffset  () { return _hasOffset;}
     public boolean hasWeights () { return _hasWeights;}
@@ -966,7 +966,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     String[][] domains = new String[names.length][];
     domains[0] = names.length == 1 ? null : !computeMetrics ? _output._domains[_output._domains.length-1] : adaptFrm.lastVec().domain();
     // Score the dataset, building the class distribution & predictions
-    BigScore bs = new BigScore(domains[0],names.length,adaptFrm.means(),_output.hasWeights() && adaptFrm.find(_output.weightsName()) >= 0,computeMetrics, true /*make preds*/, j).doAll(names.length, Vec.T_NUM, adaptFrm);
+    BigScore bs = getBigScore(domains[0],names.length,adaptFrm.means(),_output.hasWeights() && adaptFrm.find(_output.weightsName()) >= 0,computeMetrics, true /*make preds*/, j).doAll(names.length, Vec.T_NUM, adaptFrm);
     if (computeMetrics)
       bs._mb.makeModelMetrics(this, fr, adaptFrm, bs.outputFrame());
     return bs.outputFrame((null == destination_key ? Key.make() : Key.make(destination_key)), names, domains);
@@ -982,26 +982,38 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     // Build up the names & domains.
     String [] domain = !computeMetrics ? _output._domains[_output._domains.length-1] : adaptFrm.lastVec().domain();
     // Score the dataset, building the class distribution & predictions
-    BigScore bs = new BigScore(domain,0,adaptFrm.means(),_output.hasWeights() && adaptFrm.find(_output.weightsName()) >= 0,computeMetrics, false /*no preds*/, null).doAll(adaptFrm);
+    BigScore bs = getBigScore(domain,0,adaptFrm.means(),_output.hasWeights() && adaptFrm.find(_output.weightsName()) >= 0,computeMetrics, false /*no preds*/, null);
+    bs.doAll(adaptFrm);
     return bs._mb;
   }
 
-  private class BigScore extends MRTask<BigScore> {
-    final String[] _domain; // Prediction domain; union of test and train classes
-    final int _npredcols;  // Number of columns in prediction; nclasses+1 - can be less than the prediction domain
-    ModelMetrics.MetricBuilder _mb;
-    final double[] _mean;  // Column means of test frame
-    final boolean _computeMetrics;  // Column means of test frame
-    final boolean _hasWeights;
-    final boolean _makePreds;
-    final Job _j;
-    
-    BigScore( String[] domain, int ncols, double[] mean, boolean testHasWeights, boolean computeMetrics, boolean makePreds, Job j) {
-      _j = j;  
+  public BigScore getBigScore(String[] domain, int ncols, double[] mean, boolean testHasWeights, boolean computeMetrics, boolean makePreds, Job j) {
+    return new BigScoreBase(domain, ncols, mean, testHasWeights, computeMetrics, makePreds, j);
+  }
+
+  public abstract class BigScore extends MRTask<BigScore> {
+    public ModelMetrics.MetricBuilder _mb;
+    protected String[] _domain; // Prediction domain; union of test and train classes
+    protected int _npredcols;  // Number of columns in prediction; nclasses+1 - can be less than the prediction domain
+    protected double[] _mean;  // Column means of test frame
+    protected boolean _computeMetrics;  // Column means of test frame
+    protected boolean _hasWeights;
+    protected boolean _makePreds;
+    protected Job _j;
+
+    public BigScore(String[] domain, int ncols, double[] mean, boolean testHasWeights, boolean computeMetrics, boolean makePreds, Job j) {
+      _j = j;
       _domain = domain; _npredcols = ncols; _mean = mean; _computeMetrics = computeMetrics; _makePreds = makePreds;
       if(_output._hasWeights && _computeMetrics && !testHasWeights)
         throw new IllegalArgumentException("Missing weights when computing validation metrics.");
       _hasWeights = testHasWeights;
+    }
+  }
+
+  // Fine for row-based algorithms
+  protected class BigScoreBase extends BigScore {
+    BigScoreBase( String[] domain, int ncols, double[] mean, boolean testHasWeights, boolean computeMetrics, boolean makePreds, Job j) {
+      super(domain, ncols, mean, testHasWeights, computeMetrics, makePreds, j);
     }
 
     @Override public void map( Chunk chks[], NewChunk cpreds[] ) {
